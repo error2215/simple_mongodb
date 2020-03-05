@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/error2215/simple_mongodb/server/api"
 	"github.com/error2215/simple_mongodb/server/api/grpc"
 	"github.com/error2215/simple_mongodb/server/api/rest"
 	"github.com/error2215/simple_mongodb/server/config"
@@ -25,13 +26,17 @@ func Start() {
 	go func() {
 		defer wg.Done()
 		g := &grpc.Server{}
-		g.Start(grpcPort)
+		start(g)
 	}()
 	go func() {
 		defer wg.Done()
 		g := &rest.Server{}
-		g.Start(restPort)
+		start(g)
 	}()
 
 	wg.Wait()
+}
+
+func start(api api.API) {
+	api.Start()
 }
