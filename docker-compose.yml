@@ -11,7 +11,7 @@ services:
   web:
     build: .
     ports:
-      - "9090:9090"
+      - "3033:3033"
     depends_on:
       - mongo
 
