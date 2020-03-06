@@ -1,33 +1,34 @@
 package server
 
 import (
+	"context"
 	"github.com/error2215/simple_mongodb/server/api"
-	"github.com/error2215/simple_mongodb/server/api/grpc"
 	"github.com/error2215/simple_mongodb/server/api/rest"
 	"github.com/error2215/simple_mongodb/server/config"
-
+	"github.com/error2215/simple_mongodb/server/db/mongo"
 	log "github.com/sirupsen/logrus"
 
 	"sync"
 )
 
 func Start() {
-	restPort := config.GlobalConfig.RESTPort
-	grpcPort := config.GlobalConfig.GRPCPort
+	defer func() {
+		err := mongo.GetClient().Disconnect(context.TODO())
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info("Connection to MongoDB closed.")
+	}()
+	apiPort := config.GlobalConfig.ApiPort
 
 	log.WithFields(log.Fields{
-		"grpcPort": grpcPort,
-		"restPort": restPort,
+		"apiPort": apiPort,
 	}).Info("Launching API server")
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-		g := &grpc.Server{}
-		start(g)
-	}()
 	go func() {
 		defer wg.Done()
 		g := &rest.Server{}

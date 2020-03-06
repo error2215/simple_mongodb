@@ -6,17 +6,11 @@ services:
       - "27017:27017"
     volumes:
       - "mongodata:/data/db"
-    networks:
-      - network1
   web:
     build: .
     ports:
-      - "3033:3033"
+      - "3034:3034"
     depends_on:
       - mongo
-
 volumes:
   mongodata:
-
-networks:
-  network1:

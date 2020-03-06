@@ -8,8 +8,7 @@ import (
 )
 
 type Config struct {
-	RESTPort  string
-	GRPCPort  string
+	ApiPort   string
 	MongoPort string
 }
 
@@ -20,8 +19,7 @@ func init() {
 		log.Warn("Error loading .env file")
 	}
 	GlobalConfig = Config{
-		RESTPort:  os.Getenv("REST_PORT"),
-		GRPCPort:  os.Getenv("GRPC_PORT"),
+		ApiPort:   os.Getenv("API_PORT"),
 		MongoPort: os.Getenv("MONGO_PORT"),
 	}
 }

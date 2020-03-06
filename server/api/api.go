@@ -1,17 +1,19 @@
 package api
 
-import "github.com/error2215/simple_mongodb/server/db/models/user"
+import (
+	"net/http"
+)
 
 type API interface {
 	Start()
 
-	GetUser(id int32) (user user.User)
-	DeleteUser(id int32) (ok bool)
-	CreateUser(user user.User) (ok bool)
-	UpdateUser(user user.User) (ok bool)
+	GetUserHandler(w http.ResponseWriter, r *http.Request)
+	DeleteUserHandler(w http.ResponseWriter, r *http.Request)
+	CreateUserHandler(w http.ResponseWriter, r *http.Request)
+	UpdateUserHandler(w http.ResponseWriter, r *http.Request)
 
-	GetUsers(ids []int32) (users []user.User)
-	DeleteUsers(ids []int32) (ok bool)
-	CreateUsers(users []user.User) (ok bool)
-	UpdateUsers(users []user.User) (ok bool)
+	GetUsersHandler(w http.ResponseWriter, r *http.Request)
+	DeleteUsersHandler(w http.ResponseWriter, r *http.Request)
+	CreateUsersHandler(w http.ResponseWriter, r *http.Request)
+	UpdateUsersHandler(w http.ResponseWriter, r *http.Request)
 }
