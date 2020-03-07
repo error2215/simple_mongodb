@@ -123,20 +123,26 @@ func (s *Server) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := r.ParseForm(); err != nil {
-		log.Errorf("GetUserHandler/ParseForm() err: %v", err)
+		log.Errorf("GetUsersHandler/ParseForm() err: %v", err)
 		_, _ = w.Write(models.Response(1, err.Error(), nil).ToString())
 		return
 	}
-	id := strings.Split(r.URL.String(), "/")[2] // 0 -> "", 1 -> "users", 2 -> {id}
-	u, err := user.Get(r.Context(), convert.Int32(id))
+	page := r.FormValue("page")
+	count := r.FormValue("count")
+	if (page == "") || (count == "") {
+		log.Errorf("GetUsersHandler/FormValue() err: %v", errors.New("Missing required params"))
+		_, _ = w.Write(models.Response(1, errors.New("Missing required params").Error(), nil).ToString())
+		return
+	}
+	u, err := user.GetUsers(r.Context(), convert.Int32(page), convert.Int32(count))
 	if err != nil {
-		log.Errorf("GetUserHandler/user.Get() err: %v", err)
+		log.Errorf("GetUsersHandler/user.GetUsers() err: %v", err)
 		_, _ = w.Write(models.Response(1, err.Error(), nil).ToString())
 		return
 	}
-	jsonData, err := u.ToJson()
+	jsonData, err := user.SliceToJson(u...)
 	if err != nil {
-		log.Errorf("GetUserHandler/user.SliceToJson() err: %v", err)
+		log.Errorf("GetUsersHandler/user.SliceToJson() err: %v", err)
 		_, _ = w.Write(models.Response(1, err.Error(), nil).ToString())
 		return
 	}

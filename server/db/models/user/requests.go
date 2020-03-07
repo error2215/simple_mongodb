@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/error2215/simple_mongodb/server/db/mongo"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func Get(ctx context.Context, id int32) (*User, error) {
@@ -38,4 +39,31 @@ func Update(ctx context.Context, user *User) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func GetUsers(ctx context.Context, page int32, count int32) ([]User, error) {
+	collection := mongo.GetClient().Database("db").Collection("users")
+	findOpt := options.Find()
+	if page != 1 {
+		findOpt.SetSkip(int64((page - 1) * count))
+	}
+	//findOpt.SetSort("id") //TODO check err
+	findOpt.SetLimit(int64(count))
+	cur, err := collection.Find(ctx, bson.D{{}}, findOpt)
+	if err != nil {
+		return nil, err
+	}
+	users := []User{}
+	usr := User{}
+	for cur.Next(ctx) {
+		usr = User{}
+		err := cur.Decode(&usr)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, usr)
+	}
+	cur.Close(ctx)
+	return users, nil
 }

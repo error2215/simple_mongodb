@@ -26,7 +26,7 @@ type User struct {
 	GamesIds  []int32 `json:"games_ids"`
 }
 
-func SliceToJson(users ...*User) ([]byte, error) {
+func SliceToJson(users ...User) ([]byte, error) {
 	encoded, err := json.Marshal(users)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,6 @@ func GenerateMock() {
 	}
 	//										Users select
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	users = []interface{}{}
 	usersBytes := []byte{}
 	file, err := os.Open("source/users_go.json")
 	if err != nil {
@@ -81,76 +80,41 @@ func GenerateMock() {
 	for i, v := range mockUserStruct.Objects {
 		v.Id = convert.Int32(i)
 		usersInt = append(usersInt, interface{}(v))
+		if i+1 == usersCount {
+			break
+		}
 	}
-	//jsonTmp := map[string]interface{}{}
-	//err = json.Unmarshal(usersBytes, &jsonTmp)
-	//if err != nil{
-	//	logrus.Error(err)
-	//	os.Exit(1)
-	//}
-	//jsonArr := jsonTmp["objects"].([]interface{})
-	//for num, intUser := range jsonArr{
-	//	localUser := User{}
-	//	usrMarsh,err := json.Marshal(intUser)
-	//	if err != nil{
-	//		logrus.Error(err)
-	//		os.Exit(1)
-	//	}
-	//	err = json.Unmarshal(usrMarsh, &localUser)
-	//	if err != nil{
-	//		logrus.Error(err)
-	//		os.Exit(1)
-	//	}
-	//	localUser.Id = convert.Int32(num)
-	//	users = append(users, interface{}(localUser))
-	//}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//										Games select
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//games = []game.Game{}
-	//gamesBytes := []byte{}
-	//data = make([]byte, 64)
-	//
-	//file, err = os.Open("source/games.json")
-	//if err != nil{
-	//	logrus.Error(err)
-	//	os.Exit(1)
-	//}
-	//defer file.Close()
-	//
-	//for {
-	//	n, err := file.Read(data)
-	//	if err == io.EOF{
-	//		break
-	//	}
-	//	gamesBytes = append(gamesBytes, data[:n]...)
-	//}
-	//jsonTmp = map[string]interface{}{}
-	//err = json.Unmarshal(gamesBytes, &jsonTmp)
-	//if err != nil{
-	//	logrus.Error(err)
-	//	os.Exit(1)
-	//}
-	//jsonArr = jsonTmp["objects"].([]interface{})
-	//for _, intGame := range jsonArr{
-	//	localGame := game.Game{}
-	//	gameMarsh,err := json.Marshal(intGame)
-	//	if err != nil{
-	//		logrus.Error(err)
-	//		os.Exit(1)
-	//	}
-	//	err = json.Unmarshal(gameMarsh, &localGame)
-	//	if err != nil{
-	//		logrus.Error(err)
-	//		os.Exit(1)
-	//	}
-	//	games = append(games, localGame)
-	//}
-	//logrus.Info(len(games))
-	//logrus.Info(games[50000])
-	//
+	gamesBytes := []byte{}
+	data = make([]byte, 64)
+
+	file, err = os.Open("source/games.json")
+	if err != nil {
+		logrus.Error(err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	for {
+		n, err := file.Read(data)
+		if err == io.EOF {
+			break
+		}
+		gamesBytes = append(gamesBytes, data[:n]...)
+	}
+	r = bytes.NewReader(gamesBytes)
+	decoder = json.NewDecoder(r)
+	var mockGameStruct *mockGame
+	err = decoder.Decode(&mockGameStruct)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	games = mockGameStruct.Objects
 
 	collection := mongo.GetClient().Database("db").Collection("users")
 	insertManyResult, err := collection.InsertMany(context.TODO(), usersInt)
@@ -159,42 +123,40 @@ func GenerateMock() {
 	}
 	logrus.Info("Inserted users len: " + convert.String(len(insertManyResult.InsertedIDs)))
 
-	//allUserGames := []interface{}{}
-	//collection = mongo.GetClient().Database("db").Collection("games")
-	//counter := 0
-	//for _, localUser := range users{
-	//	counter++
-	//	userGames := getRandomGames(localUser.(User).Id)
-	//	allUserGames = append(allUserGames, userGames...)
-	//	if counter == 30 {
-	//		insertManyResult, err = collection.InsertMany(context.TODO(), allUserGames)
-	//		logrus.Info("sent")
-	//		allUserGames = []interface{}{}
-	//		counter = 0
-	//	}
-	//}
-	//logrus.Info("mda")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//logrus.Info("Inserted gae len: " + convert.String(len(insertManyResult.InsertedIDs)))
+	allUserGames := []interface{}{}
+	collection = mongo.GetClient().Database("db").Collection("games")
+	counter := 0
+	for _, localUser := range usersInt {
+		counter++
+		userGames := getRandomGames(localUser.(User).Id)
+		allUserGames = append(allUserGames, userGames...)
+		if counter == 100 {
+			insertManyResult, err = collection.InsertMany(context.TODO(), allUserGames)
+			if err != nil {
+				log.Fatal(err)
+			}
+			allUserGames = []interface{}{}
+			counter = 0
+		}
+	}
 }
 
-var games []game.Game
-var users []interface{}
-var min = 5000
-var max = 15000
-var currentCursor = 0
+var (
+	games         []game.Game
+	minGamesCount = 1000
+	maxGamesCount = 1500
+	usersCount    = 10000
+	currentCursor = 0
+)
 
 func getRandomGames(userId int32) []interface{} {
-	num := rand.Intn(max-min) + min
-	if currentCursor+num > 99999 {
+	num := rand.Intn(maxGamesCount-minGamesCount) + minGamesCount
+	if currentCursor+num > usersCount-1 {
 		currentCursor = 0
 		rand.Seed(time.Now().UnixNano())
 		rand.Shuffle(len(games), func(i, j int) { games[i], games[j] = games[j], games[i] })
 	}
 	slice := games[currentCursor : currentCursor+num]
-	logrus.Info(len(slice))
 	intSlice := []interface{}{}
 	for num, curGame := range slice {
 		curGame.UserId = userId
@@ -202,10 +164,14 @@ func getRandomGames(userId int32) []interface{} {
 		intSlice = append(intSlice, interface{}(curGame))
 	}
 	currentCursor = currentCursor + num
-	logrus.Info("cur ", currentCursor, " num ", num, " id ", userId)
+	logrus.Info("currentCursor ", currentCursor, " numberOfGames ", num, " UserId ", userId)
 	return intSlice
 }
 
 type mockUser struct {
 	Objects []User `json:"objects"`
+}
+
+type mockGame struct {
+	Objects []game.Game `json:"objects"`
 }
