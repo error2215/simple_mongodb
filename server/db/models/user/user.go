@@ -16,14 +16,14 @@ import (
 )
 
 type User struct {
-	Id        int32   `json:"_id"`
-	LastName  string  `json:"last_name"`
-	Email     string  `json:"email"`
-	Country   string  `json:"country"`
-	City      string  `json:"city"`
-	Gender    string  `json:"gender"`
-	BirthDate string  `json:"birth_date"`
-	GamesIds  []int32 `json:"games_ids"`
+	Id         int32  `json:"_id"`
+	LastName   string `json:"last_name"`
+	Email      string `json:"email"`
+	Country    string `json:"country"`
+	City       string `json:"city"`
+	Gender     string `json:"gender"`
+	BirthDate  string `json:"birth_date"`
+	GamesCount int32  `json:"games_count, omitempty"`
 }
 
 func SliceToJson(users ...User) ([]byte, error) {
