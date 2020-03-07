@@ -5,6 +5,7 @@ import (
 	"github.com/error2215/simple_mongodb/server/api"
 	"github.com/error2215/simple_mongodb/server/api/rest"
 	"github.com/error2215/simple_mongodb/server/config"
+	"github.com/error2215/simple_mongodb/server/db/models/user"
 	"github.com/error2215/simple_mongodb/server/db/mongo"
 	log "github.com/sirupsen/logrus"
 
@@ -21,11 +22,12 @@ func Start() {
 		log.Info("Connection to MongoDB closed.")
 	}()
 	apiPort := config.GlobalConfig.ApiPort
-
 	log.WithFields(log.Fields{
 		"apiPort": apiPort,
 	}).Info("Launching API server")
-
+	if config.GlobalConfig.GenerateMock == true {
+		user.GenerateMock()
+	}
 	var wg sync.WaitGroup
 	wg.Add(1)
 

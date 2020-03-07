@@ -14,7 +14,7 @@ var client *mongo.Client
 
 func init() {
 	var err error
-	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:" + config.GlobalConfig.MongoPort))
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:" + config.GlobalConfig.MongoPort))
 
 	if err != nil {
 		log.WithField("method", "server.db.mongo.init").Fatal(err)

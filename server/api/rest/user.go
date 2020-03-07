@@ -121,7 +121,26 @@ func (s *Server) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	if err := r.ParseForm(); err != nil {
+		log.Errorf("GetUserHandler/ParseForm() err: %v", err)
+		_, _ = w.Write(models.Response(1, err.Error(), nil).ToString())
+		return
+	}
+	id := strings.Split(r.URL.String(), "/")[2] // 0 -> "", 1 -> "users", 2 -> {id}
+	u, err := user.Get(r.Context(), convert.Int32(id))
+	if err != nil {
+		log.Errorf("GetUserHandler/user.Get() err: %v", err)
+		_, _ = w.Write(models.Response(1, err.Error(), nil).ToString())
+		return
+	}
+	jsonData, err := u.ToJson()
+	if err != nil {
+		log.Errorf("GetUserHandler/user.SliceToJson() err: %v", err)
+		_, _ = w.Write(models.Response(1, err.Error(), nil).ToString())
+		return
+	}
+	_, _ = w.Write(models.Response(0, "", jsonData).ToString())
 }
 
 func (s *Server) DeleteUsersHandler(w http.ResponseWriter, r *http.Request) {

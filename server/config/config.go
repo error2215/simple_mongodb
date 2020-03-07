@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/error2215/go-convert"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -8,8 +9,9 @@ import (
 )
 
 type Config struct {
-	ApiPort   string
-	MongoPort string
+	ApiPort      string
+	MongoPort    string
+	GenerateMock bool
 }
 
 var GlobalConfig Config
@@ -19,7 +21,8 @@ func init() {
 		log.Warn("Error loading .env file")
 	}
 	GlobalConfig = Config{
-		ApiPort:   os.Getenv("API_PORT"),
-		MongoPort: os.Getenv("MONGO_PORT"),
+		ApiPort:      os.Getenv("API_PORT"),
+		MongoPort:    os.Getenv("MONGO_PORT"),
+		GenerateMock: convert.Bool(os.Getenv("GENERATE_MOCK")),
 	}
 }
