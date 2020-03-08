@@ -8,7 +8,6 @@ import (
 	"github.com/error2215/simple_mongodb/server/db/models/user"
 	"github.com/error2215/simple_mongodb/server/db/mongo"
 	log "github.com/sirupsen/logrus"
-
 	"sync"
 )
 
@@ -25,11 +24,28 @@ func Start() {
 	log.WithFields(log.Fields{
 		"apiPort": apiPort,
 	}).Info("Launching API server")
-	if config.GlobalConfig.GenerateMock == true {
-		user.GenerateMock()
-	}
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	if config.GlobalConfig.GenerateMock == true {
+		user.GenerateMock()
+
+		// Do update for the first time
+		//user.UpdateUsersGameStatistics()
+
+		log.Info("Mock generated. Please rerun the app with GENERATE_MOCK=false env")
+	}
+
+	//ticker := time.NewTicker(time.Duration(config.GlobalConfig.UpdaterWaitDuration) * time.Minute)
+	//go func() {
+	//	for {
+	//		select {
+	//		case _ = <-ticker.C:
+	//			user.UpdateUsersGameStatistics()
+	//		}
+	//	}
+	//}()
+	//log.Info("User statistics updater started")
 
 	go func() {
 		defer wg.Done()

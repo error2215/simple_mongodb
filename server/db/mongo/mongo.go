@@ -2,11 +2,10 @@ package mongo
 
 import (
 	"context"
+	"github.com/error2215/simple_mongodb/server/config"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/error2215/simple_mongodb/server/config"
 )
 
 var client *mongo.Client

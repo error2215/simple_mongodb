@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/error2215/go-convert"
+	"github.com/error2215/simple_mongodb/server/config"
 	"github.com/error2215/simple_mongodb/server/db/models/game"
 	"github.com/error2215/simple_mongodb/server/db/mongo"
 	"github.com/sirupsen/logrus"
@@ -76,14 +77,6 @@ func GenerateMock() {
 		logrus.Error(err)
 		return
 	}
-	usersInt := []interface{}{}
-	for i, v := range mockUserStruct.Objects {
-		v.Id = convert.Int32(i)
-		usersInt = append(usersInt, interface{}(v))
-		if i+1 == usersCount {
-			break
-		}
-	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//										Games select
@@ -114,24 +107,24 @@ func GenerateMock() {
 		logrus.Error(err)
 		return
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	for i, v := range mockUserStruct.Objects {
+		v.Id = convert.Int32(i)
+	}
+
 	games = mockGameStruct.Objects
 
-	collection := mongo.GetClient().Database("db").Collection("users")
-	insertManyResult, err := collection.InsertMany(context.TODO(), usersInt)
-	if err != nil {
-		log.Fatal(err)
-	}
-	logrus.Info("Inserted users len: " + convert.String(len(insertManyResult.InsertedIDs)))
-
 	allUserGames := []interface{}{}
-	collection = mongo.GetClient().Database("db").Collection("games")
+	collection := mongo.GetClient().Database("db").Collection("games")
 	counter := 0
-	for _, localUser := range usersInt {
+	for _, localUser := range mockUserStruct.Objects {
 		counter++
-		userGames := getRandomGames(localUser.(User).Id)
+		userGames := getRandomGames(localUser.Id)
+		localUser.GamesCount = int32(len(userGames))
 		allUserGames = append(allUserGames, userGames...)
 		if counter == 100 {
-			insertManyResult, err = collection.InsertMany(context.TODO(), allUserGames)
+			_, err = collection.InsertMany(context.TODO(), allUserGames)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -139,13 +132,27 @@ func GenerateMock() {
 			counter = 0
 		}
 	}
+
+	usersInt := []interface{}{}
+	for i, v := range mockUserStruct.Objects {
+		usersInt = append(usersInt, interface{}(v))
+		if i+1 == usersCount {
+			break
+		}
+	}
+	collection = mongo.GetClient().Database("db").Collection("users")
+	insertManyResult, err := collection.InsertMany(context.TODO(), usersInt)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logrus.Info("Inserted users len: " + convert.String(len(insertManyResult.InsertedIDs)))
 }
 
 var (
 	games         []game.Game
-	minGamesCount = 1000
-	maxGamesCount = 1500
-	usersCount    = 10000
+	minGamesCount = config.GlobalConfig.MockMinGamesCount
+	maxGamesCount = config.GlobalConfig.MockMaxGamesCount
+	usersCount    = config.GlobalConfig.MockUsersCount
 	currentCursor = 0
 )
 
