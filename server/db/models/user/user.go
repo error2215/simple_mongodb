@@ -26,8 +26,8 @@ type User struct {
 	Country    string `json:"country,omitempty"`
 	City       string `json:"city,omitempty"`
 	Gender     string `json:"gender,omitempty"`
-	BirthDate  string `json:"birthdate,omitempty"`
-	GamesCount int32  `json:"gamescount,omitempty"`
+	BirthDate  string `json:"birth_date,omitempty"`
+	GamesCount int32  `json:"games_count,omitempty"`
 }
 
 func SliceToJson(users ...User) ([]byte, error) {

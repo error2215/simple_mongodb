@@ -4,12 +4,12 @@ import "encoding/json"
 
 type Game struct {
 	Id          string `json:"id"`
-	UserId      int32  `json:"userid,omitempty"`
-	PointGained string `json:"pointsgained,omitempty"`
-	WinStatus   string `json:"winstatus,omitempty"`
-	GameType    string `json:"gametype,omitempty"`
+	UserId      int32  `json:"user_id,omitempty"`
+	PointGained string `json:"points_gained,omitempty"`
+	WinStatus   string `json:"win_status,omitempty"`
+	GameType    string `json:"game_type,omitempty"`
 	Created     string `json:"created,omitempty"`
-	CreatedDay  string `json:"createdday,omitempty"`
+	CreatedDay  string `json:"created_day,omitempty"`
 }
 
 func SliceToJson(users ...Game) ([]byte, error) {
