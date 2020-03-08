@@ -6,14 +6,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 )
 
 var client *mongo.Client
 
 func init() {
 	var err error
-	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:" + config.GlobalConfig.MongoPort))
-
+	if os.Getenv("DOCKER_COMPOSE") == "true" {
+		client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:" + config.GlobalConfig.MongoPort))
+	} else {
+		client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:" + config.GlobalConfig.MongoPort))
+	}
 	if err != nil {
 		log.WithField("method", "server.db.mongo.init").Fatal(err)
 	}

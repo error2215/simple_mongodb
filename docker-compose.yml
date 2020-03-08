@@ -8,6 +8,8 @@ services:
       - "mongodata:/data/db"
   web:
     build: .
+    environment:
+      DOCKER_COMPOSE: "true"
     ports:
       - "3034:3034"
     depends_on:
