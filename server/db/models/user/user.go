@@ -16,6 +16,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -140,29 +142,30 @@ func GenerateMock() {
 	}
 	games = mockGameStruct.Objects
 
-	allUserGames := []interface{}{}
 	collection := mongo.GetClient().Database("db").Collection("games")
-	counter := 0
-	opts := options.InsertMany().SetOrdered(false)
-
+	var wg sync.WaitGroup
+	var mutex sync.RWMutex
+	waitNumber := 800
 	for i, localUser := range mockUserStruct.Objects {
-		counter++
-		userGames := getRandomGames(localUser.Id)
-		mockUserStruct.Objects[i].GamesCount = int32(len(userGames))
-		allUserGames = append(allUserGames, userGames...)
-		if counter == config.GlobalConfig.MockGamesInsertBatchSize || i+1 == usersCount {
-			_, err = collection.InsertMany(context.TODO(), allUserGames, opts)
+		if i == waitNumber {
+			waitNumber += 800
+			wg.Wait()
+		}
+		wg.Add(1)
+		go func(id int32, mutex *sync.RWMutex) {
+			userGames := getRandomGames(id, mutex)
+			mockUserStruct.Objects[i].GamesCount = int32(len(userGames))
+			_, err = collection.InsertMany(context.TODO(), userGames)
 			if err != nil {
 				log.Fatal(err)
 			}
-			allUserGames = []interface{}{}
-			counter = 0
-			if i+1 == usersCount {
-				break
-			}
+			wg.Done()
+		}(localUser.Id, &mutex)
+		if i+1 == usersCount {
+			break
 		}
 	}
-
+	wg.Wait()
 	usersInt := []interface{}{}
 	for i, v := range mockUserStruct.Objects {
 		usersInt = append(usersInt, interface{}(v))
@@ -183,17 +186,15 @@ var (
 	minGamesCount = config.GlobalConfig.MockMinGamesCount
 	maxGamesCount = config.GlobalConfig.MockMaxGamesCount
 	usersCount    = config.GlobalConfig.MockUsersCount
-	currentCursor = 0
 )
 
-func getRandomGames(userId int32) []interface{} {
+func getRandomGames(userId int32, mutex *sync.RWMutex) []interface{} {
 	num := rand.Intn(maxGamesCount+1-minGamesCount) + minGamesCount
-	if currentCursor+num > len(games)-1 {
-		currentCursor = 0
-		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(games), func(i, j int) { games[i], games[j] = games[j], games[i] })
-	}
-	slice := games[currentCursor : currentCursor+num]
+	mutex.Lock()
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(games), func(i, j int) { games[i], games[j] = games[j], games[i] })
+	mutex.Unlock()
+	slice := games[0:num]
 	intSlice := []interface{}{}
 	for num, curGame := range slice {
 		curGame.UserId = userId
@@ -206,8 +207,7 @@ func getRandomGames(userId int32) []interface{} {
 		}
 		intSlice = append(intSlice, interface{}(curGame))
 	}
-	currentCursor = currentCursor + num
-	logrus.Info("currentCursor ", currentCursor, " numberOfGames ", num, " UserId ", userId)
+	logrus.Info("numberOfGames: ", num, " UserId: ", userId, " Goroutine num:", runtime.NumGoroutine())
 	return intSlice
 }
 
@@ -218,3 +218,7 @@ type mockUser struct {
 type mockGame struct {
 	Objects []game.Game `json:"objects"`
 }
+
+//9 mln 100 sec goroutines 500 no sync limit
+//7 mln 100 sec goroutines 500 sync limit
+//6.8 mln 100 sec goroutines 500 sync no limit
