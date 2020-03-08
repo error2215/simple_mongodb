@@ -148,7 +148,7 @@ func GenerateMock() {
 		userGames := getRandomGames(localUser.Id)
 		mockUserStruct.Objects[i].GamesCount = int32(len(userGames))
 		allUserGames = append(allUserGames, userGames...)
-		if counter == 100 || i+1 == usersCount {
+		if counter == config.GlobalConfig.MockGamesInsertBatchSize || i+1 == usersCount {
 			_, err = collection.InsertMany(context.TODO(), allUserGames)
 			if err != nil {
 				log.Fatal(err)

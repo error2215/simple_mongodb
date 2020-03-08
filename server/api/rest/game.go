@@ -16,6 +16,7 @@ func (s *Server) GetGamesByNumberHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	//we can run alternative method that works with aggregation
+	//u, err := game.GetGamesGroupedByNumberAggregation(r.Context())
 	u, err := game.GetGamesGroupedByNumber(r.Context())
 	if err != nil {
 		log.Errorf("GetGamesByNumberHandler/game.GetGamesGroupedByNumber() err: %v", err)
@@ -39,6 +40,7 @@ func (s *Server) GetGamesByDateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//we can run alternative method that works with aggregation
+	//u, err := game.GetGamesGroupedByDateAggregation(r.Context())
 	u, err := game.GetGamesGroupedByDate(r.Context())
 	if err != nil {
 		log.Errorf("GetGamesByDateHandler/game.GetGamesGroupedByDate() err: %v", err)

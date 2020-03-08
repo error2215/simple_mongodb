@@ -13,7 +13,11 @@ type API interface {
 	UpdateUserHandler(w http.ResponseWriter, r *http.Request)
 
 	GetUsersHandler(w http.ResponseWriter, r *http.Request)
-	DeleteUsersHandler(w http.ResponseWriter, r *http.Request)
-	CreateUsersHandler(w http.ResponseWriter, r *http.Request)
-	UpdateUsersHandler(w http.ResponseWriter, r *http.Request)
+	//DeleteUsersHandler(w http.ResponseWriter, r *http.Request)
+	//CreateUsersHandler(w http.ResponseWriter, r *http.Request)
+	//UpdateUsersHandler(w http.ResponseWriter, r *http.Request)
+
+	GetRatingHandler(w http.ResponseWriter, r *http.Request)
+	GetGamesByNumberHandler(w http.ResponseWriter, r *http.Request)
+	GetGamesByDateHandler(w http.ResponseWriter, r *http.Request)
 }
