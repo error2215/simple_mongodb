@@ -3,12 +3,9 @@ package user
 import (
 	"context"
 	"errors"
-	"github.com/error2215/go-convert"
 	"github.com/error2215/simple_mongodb/server/db/mongo"
 	"go.mongodb.org/mongo-driver/bson"
-	mongo2 "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"sort"
 )
 
 func Get(ctx context.Context, id int32) (*User, error) {
@@ -68,104 +65,33 @@ func GetUsers(ctx context.Context, page int32, count int32) ([]User, error) {
 		users = append(users, usr)
 	}
 	cur.Close(ctx)
-	collection = mongo.GetClient().Database("db").Collection("games")
-	matchStage := bson.D{
-		{"$match",
-			bson.D{
-				{
-					"userid", bson.D{
-						{"$gte", users[0].Id},
-						{"$lte", users[len(users)-1].Id},
-					},
-				},
-			},
-		},
-	}
-	countStage := bson.D{
-		{"$group", bson.D{
-			{"_id", "$userid"},
-			{"count", bson.D{
-				{"$sum", 1},
-			}},
-		}},
-	}
-	cur, err = collection.Aggregate(ctx, mongo2.Pipeline{matchStage, countStage})
-	if err != nil {
-		return nil, err
-	}
-	var results []bson.M
-	if err = cur.All(context.TODO(), &results); err != nil {
-		return nil, err
-	}
-	sort.SliceStable(results, func(i, j int) bool {
-		return results[i]["_id"].(int32) < results[j]["_id"].(int32)
-	})
-	for num, result := range results {
-		if len(results) != len(users) {
-			return nil, errors.New("user games select do not equal to user count " + convert.String(len(results)) + " and " + convert.String(len(users)))
-		}
-		users[num].GamesCount = result["count"].(int32)
-	}
-
-	cur.Close(ctx)
 	return users, nil
 }
 
-//todo goroutines
-func getUsersGoroutine() {
+func GetRating(ctx context.Context, page int32, count int32) ([]User, error) {
+	collection := mongo.GetClient().Database("db").Collection("users")
+	findOpt := options.Find()
+	if page != 1 {
+		findOpt.SetSkip(int64((page - 1) * count))
+	}
+	findOpt.SetSort(bson.D{{"gamescount", -1}})
+	findOpt.SetLimit(int64(count))
+	findOpt.SetProjection(bson.D{{"gamescount", 1}, {"id", 1}})
+	cur, err := collection.Find(ctx, bson.D{{}}, findOpt)
+	if err != nil {
+		return nil, err
+	}
+	users := []User{}
+	usr := User{}
+	for cur.Next(ctx) {
+		usr = User{}
+		err := cur.Decode(&usr)
+		if err != nil {
+			return nil, err
+		}
 
+		users = append(users, usr)
+	}
+	cur.Close(ctx)
+	return users, nil
 }
-
-//func UpdateUsersGameStatistics(errChan chan error){
-//	collection := mongo.GetClient().Database("db").Collection("users")
-//	findOpt := options.Find().SetSort(bson.D{{"id", 1}})
-//	cur, err := collection.Find(context.TODO(), bson.D{{}}, findOpt)
-//	if err != nil {
-//		errChan <- err
-//		return
-//	}
-//	users := []User{}
-//	usr := User{}
-//	for cur.Next(context.TODO()) {
-//		usr = User{}
-//		err := cur.Decode(&usr)
-//		if err != nil {
-//			errChan <- err
-//			return
-//		}
-//
-//		users = append(users, usr)
-//	}
-//	cur.Close(context.TODO())
-//	collection = mongo.GetClient().Database("db").Collection("games")
-//	countStage := bson.D{
-//		{"$group", bson.D{
-//			{"_id", "$userid"},
-//			{"count", bson.D{
-//				{"$sum", 1},
-//			}},
-//		}},
-//	}
-//	cur, err = collection.Aggregate(context.TODO(), mongo2.Pipeline{countStage})
-//	if err != nil {
-//		errChan <- err
-//		return
-//	}
-//	var results []bson.M
-//	if err = cur.All(context.TODO(), &results); err != nil {
-//		errChan <- err
-//		return
-//	}
-//	sort.SliceStable(results, func(i, j int) bool {
-//		return results[i]["_id"].(int32) < results[j]["_id"].(int32)
-//	})
-//	for num, result := range results {
-//		if len(results) != len(users) {
-//			errChan <- errors.New("user games select do not equal to user count " + convert.String(len(results)) + " and " + convert.String(len(users)))
-//			return
-//		}
-//		users[num].GamesCount = result["count"].(int32)
-//	}
-//
-//	cur.Close(context.TODO())
-//}

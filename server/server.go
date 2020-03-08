@@ -29,23 +29,9 @@ func Start() {
 
 	if config.GlobalConfig.GenerateMock == true {
 		user.GenerateMock()
-
-		// Do update for the first time
-		//user.UpdateUsersGameStatistics()
-
 		log.Info("Mock generated. Please rerun the app with GENERATE_MOCK=false env")
+		return
 	}
-
-	//ticker := time.NewTicker(time.Duration(config.GlobalConfig.UpdaterWaitDuration) * time.Minute)
-	//go func() {
-	//	for {
-	//		select {
-	//		case _ = <-ticker.C:
-	//			user.UpdateUsersGameStatistics()
-	//		}
-	//	}
-	//}()
-	//log.Info("User statistics updater started")
 
 	go func() {
 		defer wg.Done()

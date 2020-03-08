@@ -25,20 +25,13 @@ func (s *Server) Start() {
 	})
 
 	r.Route("/users", func(r chi.Router) {
-		//r.Delete("/", s.DeleteUsersHandler) // remove users
-		//r.Put("/", s.UpdateUsersHandler)    // add new users
 		r.Get("/", s.GetUsersHandler) // get users
-		//r.Post("/", s.CreateUsersHandler)   // update user's data
 	})
 
 	r.Route("/games", func(r chi.Router) {
-		//r.Delete("/", s.DeleteUsersHandler) // remove games
-		//r.Put("/", s.UpdateUsersHandler)    // add new games
-		//r.Get("/", s.GetUsersHandler)       // get games
-		r.Get("/rating", s.GetRatingHandler) // get ratings
-		//r.Get("/{number}", s.GetGamesByNumberHandler)       // get games grouped by numbers of games
-		//r.Get("/{day}", s.GetGamesByDateHandler)       // get games grouped by date
-		//r.Post("/", s.CreateUsersHandler)   // update games's data
+		r.Get("/rating", s.GetRatingHandler)        // get ratings
+		r.Get("/number", s.GetGamesByNumberHandler) // get games grouped by numbers of games
+		r.Get("/date", s.GetGamesByDateHandler)     // get games grouped by date
 	})
 
 	log.Info("Api Server started on port: " + config.GlobalConfig.ApiPort)

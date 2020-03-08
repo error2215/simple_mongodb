@@ -30,7 +30,7 @@ func init() {
 		GenerateMock:        convert.Bool(os.Getenv("GENERATE_MOCK")),
 		MockMaxGamesCount:   convert.Int(os.Getenv("MOCK_MAX_GAMES_COUNT")),
 		MockMinGamesCount:   convert.Int(os.Getenv("MOCK_MIN_GAMES_COUNT")),
-		MockUsersCount:      convert.Int(os.Getenv("UPDATER_WAIT_DURATION")),
-		UpdaterWaitDuration: convert.Int32(os.Getenv("MOCK_USERS_COUNT")),
+		MockUsersCount:      convert.Int(os.Getenv("MOCK_USERS_COUNT")),
+		UpdaterWaitDuration: convert.Int32(os.Getenv("UPDATER_WAIT_DURATION")),
 	}
 }
