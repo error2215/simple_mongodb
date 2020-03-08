@@ -143,13 +143,15 @@ func GenerateMock() {
 	allUserGames := []interface{}{}
 	collection := mongo.GetClient().Database("db").Collection("games")
 	counter := 0
+	opts := options.InsertMany().SetOrdered(false)
+
 	for i, localUser := range mockUserStruct.Objects {
 		counter++
 		userGames := getRandomGames(localUser.Id)
 		mockUserStruct.Objects[i].GamesCount = int32(len(userGames))
 		allUserGames = append(allUserGames, userGames...)
 		if counter == config.GlobalConfig.MockGamesInsertBatchSize || i+1 == usersCount {
-			_, err = collection.InsertMany(context.TODO(), allUserGames)
+			_, err = collection.InsertMany(context.TODO(), allUserGames, opts)
 			if err != nil {
 				log.Fatal(err)
 			}
