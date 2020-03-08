@@ -39,5 +39,6 @@ You can run this app by 2 ways:
      2) Get rating of users - `http://localhost:3034/games/rating?page=1&count=1000`
      3) Get games grouped by days - `http://localhost:3034/games/number`
      4) Get games grouped by number of game - `http://localhost:3034/games/date`
-  
-    
+     
+If grouping by days or number has bad performance you can try run method working with aggregations
+(uncomment lines 19 and 43 in file `server/api/rest/game.go` and comment lines 20 and 44)
