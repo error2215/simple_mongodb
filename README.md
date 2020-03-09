@@ -19,7 +19,7 @@ You can run this app by 2 ways:
       * `time="2020-03-08T21:58:11Z" level=info msg="Connection to MongoDB closed."`
   * Then set env `GENERATE_MOCK=false` and run `go run main.go`
     
-## 2) Run MongoDB separately in Docker container and app by yourself
+## 2) Run all in Docker containers
   * Set envs
     1) Set env `GENERATE_MOCK=true`
     2) `MOCK_MIN_GAMES_COUNT=` (minimum games count for each user)
