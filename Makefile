@@ -17,7 +17,7 @@ docker-build:
 	@echo "Docker-compose build"
 	@docker-compose build
 
-all_docker: mod build docker
+all_docker: mod docker-build docker
 
 mongo_docker:
 	@sudo docker run -d -p 27017:27017 -v ~/data:/data/db mongo

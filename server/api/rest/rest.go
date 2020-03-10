@@ -29,9 +29,8 @@ func (s *Server) Start() {
 	})
 
 	r.Route("/games", func(r chi.Router) {
-		r.Get("/rating", s.GetRatingHandler)        // get ratings
-		r.Get("/number", s.GetGamesByNumberHandler) // get games grouped by numbers of games
-		r.Get("/date", s.GetGamesByDateHandler)     // get games grouped by date
+		r.Get("/rating", s.GetRatingHandler)              // get ratings
+		r.Get("/group", s.GetGamesByDateAndNumberHandler) // get games grouped by date and number
 	})
 
 	log.Info("Api Server started on port: " + config.GlobalConfig.ApiPort)

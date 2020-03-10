@@ -7,5 +7,6 @@ require (
 	github.com/go-chi/chi v4.0.3+incompatible
 	github.com/joho/godotenv v1.3.0
 	github.com/sirupsen/logrus v1.4.2
+	github.com/stretchr/testify v1.4.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.1
 )

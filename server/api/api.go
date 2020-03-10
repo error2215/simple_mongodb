@@ -18,6 +18,5 @@ type API interface {
 	//UpdateUsersHandler(w http.ResponseWriter, r *http.Request)
 
 	GetRatingHandler(w http.ResponseWriter, r *http.Request)
-	GetGamesByNumberHandler(w http.ResponseWriter, r *http.Request)
-	GetGamesByDateHandler(w http.ResponseWriter, r *http.Request)
+	GetGamesByDateAndNumberHandler(w http.ResponseWriter, r *http.Request)
 }
